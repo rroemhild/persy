@@ -17,23 +17,28 @@ BuildRequires:  python-sphinx
 BuildRequires:  python-devel
 Requires:       python python-paramiko python-inotify gnome-python2-rsvg librsvg2 git gitk
 
+
 %description
 backup or synchronize your data with multiple machines. 
 persy is designed to run by its own on the computer or in an environment with 
 at least one server in reach of every computer with synced files.
+
 
 %prep
 %setup -q
 
 %patch0 -p1
 
+
 %build
 ./configure && make
+
 
 %install
 make install \
      PREFIX="%{_prefix}" \
      DEST="%{buildroot}/usr"
+ 
  
 %files
 %defattr(-,root,root,-)
@@ -45,3 +50,8 @@ make install \
 /%{_datadir}/applications/%{name}.desktop
 /%{_datadir}/icons/%{name}.svg
 /etc/bash_completion.d/persy
+
+
+%changelog
+* Wed Mar 10 2010 Rafael Roemhild <rafael@roemhild.de> 0.9-1
+- Initial packaging
