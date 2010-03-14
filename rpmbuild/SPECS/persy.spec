@@ -35,21 +35,26 @@ at least one server in reach of every computer with synced files.
 
 
 %install
+rm -rf %{buildroot}
 make install \
      PREFIX="%{_prefix}" \
-     DEST="%{buildroot}/usr"
- 
- 
+     DESTDIR="%{buildroot}"
+
+
 %files
 %defattr(-,root,root,-)
-%doc
+%doc INSTALL README.markdown
 /%{_bindir}/%{name}
 /usr/lib/%{name}/*
 /%{_datadir}/doc/%{name}/*
-/%{_datadir}/man/man1/%{name}.1.gz
 /%{_datadir}/applications/%{name}.desktop
 /%{_datadir}/icons/%{name}.svg
-/etc/bash_completion.d/persy
+/%{_mandir}/man/man1/%{name}.1.gz
+/%{_sysconfdir}/bash_completion.d/persy
+
+
+%clean
+rm -rf %{buildroot}
 
 
 %changelog
