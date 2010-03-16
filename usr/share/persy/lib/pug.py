@@ -62,7 +62,7 @@ GIT_WORK_TREE = the root git repostitory
 	def __getEnv(self):
 		'''Gets all the default environment variables and add some new'''
 		ret = os.environ
-		ret['GIT_DIR'] = os.path.join(self.GIT_WORK_TREE, self.GIT_DIR)
+		ret['GIT_DIR'] = self.GIT_DIR
 		ret['GIT_WORK_TREE'] = self.GIT_WORK_TREE
 		return ret
 
@@ -164,7 +164,7 @@ GIT_WORK_TREE = the root git repostitory
 		callcmd.append(GIT)
 		callcmd.append('push')
 		callcmd.append(target)
-		callcmd.append(branch)
+		callcmd.append(branch+":refs/heads/"+branch)
 		for param in params:
 			callcmd.append(param)
 		rc = self.execute(callcmd, stdin, stdout, stderr)
