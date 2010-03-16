@@ -15,7 +15,8 @@ Patch0:         %{name}-0.9.patch
 BuildRequires:  gettext
 BuildRequires:  python-sphinx
 BuildRequires:  python-devel
-Requires:       python python-paramiko python-inotify gnome-python2-rsvg librsvg2 git gitk
+Requires:       git gitk
+Requires:       python python-paramiko python-inotify gnome-python2-rsvg python-configobj
 
 
 %description
@@ -45,7 +46,7 @@ make install \
 %defattr(-,root,root,-)
 %doc INSTALL README.markdown
 /%{_bindir}/%{name}
-/usr/lib/%{name}/*
+/${_datadir}/share/%{name}/*
 /%{_datadir}/doc/%{name}/*
 /%{_datadir}/applications/%{name}.desktop
 /%{_datadir}/icons/%{name}.svg

@@ -59,30 +59,3 @@ index 6a53be1..f180874 100755
  #Start Makefile
  echo -e "LANGS=$langs" >> Makefile
  echo -e "SHELL=`which sh`" >> Makefile
-diff --git a/usr/lib/persy/persy.py b/usr/lib/persy/persy.py
-index 178f819..17e0a9b 100755
---- a/usr/lib/persy/persy.py
-+++ b/usr/lib/persy/persy.py
-@@ -140,7 +140,8 @@ def main(argv):
- 		config.write()
- 
- 
--	core = Core(config, log)
-+	core = Core()
-+	core.init(config, log)
- 
- 
- 	#check if a local repository is initialized:
-diff --git a/usr/lib/persy/persy_core.py b/usr/lib/persy/persy_core.py
-index 8f66423..27f50b0 100644
---- a/usr/lib/persy/persy_core.py
-+++ b/usr/lib/persy/persy_core.py
-@@ -61,7 +61,7 @@ class _Core():
- 	the core functionaliy for persy
- 	"""
- 
--	def __init__(self, config, log):
-+	def init(self, config, log):
- 		"""
- 		initializes the git binding
- 		"""
