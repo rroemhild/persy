@@ -1,13 +1,13 @@
 Name:           persy
-Version:        0.9
+Version:        0.9-dev
 Release:        1%{?dist}
-Summary:        Personal syncronization
+Summary:        personal synchronization application - based on git
 
 Group:          Applications/Archiving
 License:        GPLv2+
 URL:            http://kinkerl.github.com/persy/
 BuildArch:      noarch
-Source0:        persy-0.9.tar.gz
+Source0:        http://rserver.de/downloads/persy/persy-0.9-dev.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 Patch0:         %{name}-0.9.patch
