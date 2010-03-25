@@ -1,5 +1,5 @@
 Name:           persy
-Version:        0.9-dev
+Version:        0.9
 Release:        1%{?dist}
 Summary:        personal synchronization application - based on git
 
@@ -7,16 +7,14 @@ Group:          Applications/Archiving
 License:        GPLv2+
 URL:            http://kinkerl.github.com/persy/
 BuildArch:      noarch
-Source0:        http://rserver.de/downloads/persy/persy-0.9-dev.tar.gz
+Source0:        http://rserver.de/download/%{name}/%{name}-%{version}.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 Patch0:         %{name}-0.9.patch
 
-BuildRequires:  gettext
-BuildRequires:  python-sphinx
-BuildRequires:  python-devel
-Requires:       git gitk
-Requires:       python python-paramiko python-inotify gnome-python2-rsvg python-configobj
+BuildRequires:  gettext python-sphinx python-devel
+Requires:       git gitk python pygtk2 pygtk2-libglade
+Requires:       python-paramiko python-inotify gnome-python2-rsvg python-configobj
 
 
 %description
@@ -32,6 +30,7 @@ at least one server in reach of every computer with synced files.
 
 
 %build
+export DISPLAY=":0.0"
 ./configure && make
 
 
@@ -46,11 +45,11 @@ make install \
 %defattr(-,root,root,-)
 %doc INSTALL README.markdown
 /%{_bindir}/%{name}
-/${_datadir}/share/%{name}/*
+/%{_datadir}/%{name}/*
 /%{_datadir}/doc/%{name}/*
 /%{_datadir}/applications/%{name}.desktop
 /%{_datadir}/icons/%{name}.svg
-/%{_mandir}/man/man1/%{name}.1.gz
+/%{_mandir}/man1/%{name}.1.gz
 /%{_sysconfdir}/bash_completion.d/persy
 
 
