@@ -3,25 +3,23 @@
 
 #License
 #=======
-#persy is free software: you can redistribute it and/or modify it
+#this is free software: you can redistribute it and/or modify it
 #under the terms of the GNU General Public License as published by the Free
 #Software Foundation, either version 2 of the License, or (at your option) any
 #later version.
 
-#persy is distributed in the hope that it will be useful,
+#this software is distributed in the hope that it will be useful,
 #but WITHOUT ANY WARRANTY; without even the implied warranty of
 #MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 #General Public License for more details.
 
 #You should have received a copy of the GNU General Public License
-#along with persy; if not, write to the Free Software
+#along with this software; if not, write to the Free Software
 #Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 try:
 	import sys
 	import os
 	import subprocess2
-	from persy_vcs import VCS
-
 except ImportError as e:
 	print "You do not have all the dependencies:"
 	print str(e)
@@ -37,13 +35,13 @@ __copyright__ = "Copyright (C) 2009, 2010 Dennis Schwertel"
 
 GIT = '/usr/bin/git'
 
-class PuG(VCS):
+class PuG():
 	"""
 	persy`s uncomplicated Git.
 	can execute pushs, pulls, adds, commits and so on. 
 	"""
 
-	def __init__(self, GIT_WORK_TREE, GIT_DIR='.git', stdin=None, stderr=None, stdout=None):
+	def __init__(self, cwd='.', GIT_WORK_TREE=None, GIT_DIR=None, stdin=None, stderr=None, stdout=None):
 		'''
 GIT_DIR = the git index folder, relative to the repositorydir (default = .git)
 GIT_WORK_TREE = the root git repostitory
@@ -52,18 +50,17 @@ GIT_WORK_TREE = the root git repostitory
 		self.GIT_WORK_TREE = GIT_WORK_TREE
 		self.stdin=stdin
 		self.stderr=stderr
-		self.stdout=subprocess2.PIPE
-		self.cwd = os.environ["HOME"]
+		self.stdout=stdout
+		self.cwd = cwd
 		self.lastoutput = ''
-
-	def getLastOutput(self):
-		return self.lastoutput
 
 	def __getEnv(self):
 		'''Gets all the default environment variables and add some new'''
 		ret = os.environ
-		ret['GIT_DIR'] = self.GIT_DIR
-		ret['GIT_WORK_TREE'] = self.GIT_WORK_TREE
+		if self.GIT_DIR:
+			ret['GIT_DIR'] = self.GIT_DIR
+		if self.GIT_WORK_TREE:
+			ret['GIT_WORK_TREE'] = self.GIT_WORK_TREE
 		return ret
 
 	def execute(self, callcmd, stdin=None, stdout=None, stderr=None):
@@ -169,6 +166,8 @@ GIT_WORK_TREE = the root git repostitory
 			callcmd.append(param)
 		rc = self.execute(callcmd, stdin, stdout, stderr)
 		#no errors or nothing to push (128)
+		if rc == 1:
+			raise Exception("Can not push to server. Maybe the server or the network is not available(%i)"%rc)		
 		if not (rc == 0 or rc == 128):
 			raise Exception("push: %i"%rc)
 
@@ -183,8 +182,48 @@ GIT_WORK_TREE = the root git repostitory
 			callcmd.append(param)
 		rc = self.execute(callcmd, stdin, stdout, stderr)
 		#no errors or nothing to pull (128)
+		if rc == 1:
+			raise Exception("Can not pull from server. Maybe the server or the network is not available(%i)"%rc)		
 		if not (rc == 0 or rc == 128):
 			raise Exception("pull: %i"%rc)
+
+	def svn_pull(self, stdin=None, stdout=None, stderr=None, params = []):
+		'''pulls from a svn repository'''
+		callcmd = []
+		callcmd.append(GIT)
+		callcmd.append('svn')
+		callcmd.append('rebase')
+		for param in params:
+			callcmd.append(param)
+		rc = self.execute(callcmd, stdin, stdout, stderr)
+		if rc == 1:
+			raise Exception("Can not pull from server. Maybe the server or the network is not available(%i)"%rc)		
+
+		if not (rc == 0):
+			raise Exception("git-svn: %i"%rc)
+
+	def svn_push(self, stdin=None, stdout=None, stderr=None, params = []):
+		'''pushes commits to a svn repository'''
+		callcmd = []
+		callcmd.append(GIT)
+		callcmd.append('svn')
+		callcmd.append('dcommit')
+		rc = self.execute(callcmd, stdin, stdout, stderr)
+		#dont know! rc == 1 = nothing new added to commit!
+		if not (rc  == 0):
+			raise Exception("svn-commit: %i"%rc)
+
+	def svn_init(self, url, stdin=None, stdout=None, stderr=None, params = []):
+		'''initialize an empty repository'''
+		callcmd = []
+		callcmd.append(GIT)
+		callcmd.append('svn')
+		callcmd.append('init')
+		callcmd.append(url)
+		rc = self.execute(callcmd, stdin, stdout, stderr)
+		#0 = all ok, 128 = reinitialized, all ok
+		if not (rc  == 0):
+			raise Exception("init: %i "%rc)
 
 	def remoteAdd(self, nickname, url, stdin=None, stdout=None, stderr=None, params = []):
 		'''adds a remote repository'''
@@ -225,6 +264,7 @@ GIT_WORK_TREE = the root git repostitory
 
 
 	def get_submodules(self, stdin=None, stdout=None, stderr=None, include_dir = None):
+		'''returns an array of all the submodules'''
 		submodules = []
 		callcmd = []
 		callcmd.append(GIT)
@@ -243,3 +283,20 @@ GIT_WORK_TREE = the root git repostitory
 						if os.path.abspath(possible_module).startswith(os.path.abspath(inc)):
 							submodules.append(possible_module)
 		return submodules
+
+	def getLastOutput(self):
+		'''returns the output of the last executed command if stdout was set to subprocess2.PIPE'''
+		return self.lastoutput
+
+
+if __name__== '__main__':
+
+	git = PuG(stdout=sys.stdout)
+	print "executing git status"
+	git.status()
+
+	print "executing git status piped!"
+	git.status(stdout=subprocess2.PIPE)
+	print git.getLastOutput()
+
+

@@ -86,10 +86,37 @@ Advanced Usage
 You can use persy without a centralized server to which every clients connects and performes the synchronization (like in the illustration image above). You can also run persy without a second computer at all and synchronize with other parts(repositories) on the filesystem. Right now, this is not the intended use and i will not cover this in the cli or the upcomming gui. You can however configure this in the git configuration for persy ~/.persy/git/config and i try to take care of the internal implementation. If you have questions regarding esoteric setups, feel free to mail me.
 
 
-persy's states
+Usage with an SVN Backend (experimental)
 --------------------------------------------
 
-When running persy, its possible to run in the following states. most of them are selfexplanatory.
+You dont have use git to synchronize with to a remote host. SVN is another may to connect from your local computer to a remote server. persy will use git-svn as a bridge between the client (git) and the server (svn).  
+
+.. warning::
+
+   This is not very well tested and just exists "because its possible". 
+
+Remove the .persy directory in your homefolder. 
+Start and Stop persy to generate the needed config files.
+Remove the git directory in .persy/git
+Alter .persy/config and add "use_gitsvn = True" to the remote section. 
+Initialize persy manually:
+
+.. code-block:: bash
+  :linenos:
+
+   . persy --setenv # manual mode for persy
+   git svn init <SVNREPOSITORYURL>
+   git checkout -b local-svn remotes/git-svn
+
+Start persy, enable remote synchronization and see if it works!
+Because of the nature of this quite unsupported feature, most of the settings on the remote settings tab are obsolete from now on.
+
+
+States in persy
+--------------------------------------------
+
+When running persy, its possible to run in the following states. A state is a simplification of the status of the file backup and synchronization.
+Most of them are selfexplanatory.
 
 
 .. csv-table:: 
@@ -97,10 +124,10 @@ When running persy, its possible to run in the following states. most of them ar
   :widths: 64, 400
 
 
-  |persy_idle.svg|, "idle, not running"
-  |persy_untracked.svg|, "untracked changes local"
-  |persy_unsynced.svg|, "all local changes are backupped"
-  |persy_ok.svg|, "persy is in sync with the server"
+  |persy_idle.svg|, "idle, persy is not running"
+  |persy_untracked.svg|, "local changes exist that are not saved in the local repository"
+  |persy_unsynced.svg|, "all local changes are saved"
+  |persy_ok.svg|, "all local changes are saved AND these changes are pushed to the remote server"
   |persy_warn.svg|, "warning!"
   |persy_error.svg|, "error!"
 

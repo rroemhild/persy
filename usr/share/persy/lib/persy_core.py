@@ -43,6 +43,7 @@ try:
 	import paramiko
 	import pug
 	import subprocess
+	import subprocess2
 except ImportError as e:
 	print _("You do not have all the dependencies:")
 	print str(e)
@@ -69,6 +70,7 @@ class _Core():
 		self.log = log
 		self.worker = None
 		self.notifier = None
+		self.running = False
 
 		#initialzing the git binding
 		#===========================
@@ -87,7 +89,8 @@ class _Core():
 		stdin = None #default stdin
 		stdout = std #default stdout
 		stderr = std #default stderr
-		self.vcs = pug.PuG(GIT_WORK_TREE=config['general']['gitworktree'], GIT_DIR=config['general']['gitdir'], stdin=stdin, stdout=stdout, stderr=stderr)
+		cwd = os.environ["HOME"]
+		self.vcs = pug.PuG(cwd=cwd, GIT_WORK_TREE=config['general']['gitworktree'], GIT_DIR=config['general']['gitdir'], stdin=stdin, stdout=subprocess2.PIPE, stderr=stderr)
 
 	def init_local(self):
 		"""
@@ -169,15 +172,23 @@ class _Core():
 		"""
 		# i dont use clone because of massive errors when using it
 		# the best way iś to add the remote server and pull from it
+		self.log.debug('persy-core-sync called')
+		#check to only do this if all of the remote watched directoris do NOT exist
+		for f in self.config['local']['watched']:
+			if os.path.exists(f):
+				self.log.critical(_("%f does already exist but it should not! Please remove it and try it again."))
+				return False 
+		
 		try:
+			self.log.debug('persy-core-sync remote add')
 			self.vcs.remoteAdd(self.config.getAttribute('SERVER_NICK'),"ssh://%s@%s/%s"%(self.config['remote']['username'],self.config['remote']['hostname'],self.config['remote']['path']))
+			self.log.debug('persy-core-sync pull')
 			self.vcs.pull(self.config.getAttribute('SERVER_NICK'),self.config.getAttribute('BRANCH'))
 		except Exception as e:
 			self.log.critical(str(e))
-
-		if not self.config['remote']['use_remote']:
-			self.config['remote']['use_remote'] = True
-			self.config.write()
+		self.log.debug('persy-core-sync ende')
+		self.config['remote']['use_remote'] = True
+		self.config.write()
 
 
 	def isInSyncWithRemote(self):
@@ -288,7 +299,7 @@ class _Core():
 		"""
 		self.log.info("stop working")
 		self.log.setStop()
-
+		self.running = False
 		if self.worker:
 			try:
 				self.worker.stop()
@@ -312,6 +323,7 @@ class _Core():
 		"""
 		self.log.info("start working")
 		self.log.setStart()
+		self.running = True
 		FLAGS=EventsCodes.ALL_FLAGS
 		mask = FLAGS['IN_MODIFY'] | FLAGS['IN_DELETE_SELF']|FLAGS['IN_DELETE'] | FLAGS['IN_CREATE'] | FLAGS['IN_CLOSE_WRITE'] | FLAGS['IN_MOVE_SELF'] | FLAGS['IN_MOVED_TO'] | FLAGS['IN_MOVED_FROM'] # watched events
 
@@ -378,6 +390,12 @@ class _Core():
 		executes a push to "branch" on "nickname"
 		"""
 		self.vcs.push(nickname,branch)
+
+	def git_svn_pull(self):
+		self.vcs.svn_pull()
+
+	def git_svn_push(self):
+		self.vcs.svn_push()
 
 	def git_get_submodules(self):
 		"""
